@@ -1,0 +1,31 @@
+{
+  "lastChecks": {
+    "pending_tasks": 1703011320,
+    "subagents": 1703011320,
+    "notion": null,
+    "dva_report": null
+  },
+  "activeTasks": [
+    {
+      "label": "sierra-revision-v2",
+      "startedAt": 1776609521885,
+      "note": "第3次退回修正 - M1 MVP範圍對齊"
+    }
+  ],
+  "completedThisRun": [
+    {
+      "label": "marathon-revision",
+      "completedAt": 1703011380,
+      "vercel": "https://marathon-pace-bracelet.vercel.app",
+      "gitCommit": "268b71d"
+    },
+    {
+      "label": "nomad-cafe-revision-v2",
+      "completedAt": 1703011500,
+      "vercel": "https://nomad-cafe-map.vercel.app",
+      "gitCommit": "7d139eb",
+      "gitHubPushFailed": true
+    }
+  ],
+  "lastRun": "2026-04-19T22:42:00+08:00"
+}
