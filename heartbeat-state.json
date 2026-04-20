@@ -1,8 +1,8 @@
 {
   "lastChecks": {
-    "pending_tasks": 1703011320,
-    "subagents": 1703011320,
-    "notion": null,
+    "pending_tasks": 1745100120,
+    "subagents": 1745100120,
+    "notion": 1745100120,
     "dva_report": null
   },
   "activeTasks": [
@@ -17,15 +17,36 @@
       "label": "marathon-revision",
       "completedAt": 1703011380,
       "vercel": "https://marathon-pace-bracelet.vercel.app",
-      "gitCommit": "268b71d"
+      "gitCommit": "268b71d",
+      "notionUpdated": true,
+      "dvaNotified": true
     },
     {
       "label": "nomad-cafe-revision-v2",
       "completedAt": 1703011500,
       "vercel": "https://nomad-cafe-map.vercel.app",
       "gitCommit": "7d139eb",
-      "gitHubPushFailed": true
+      "gitHubPushFailed": true,
+      "notionUpdated": true,
+      "dvaNotified": true
+    },
+    {
+      "label": "mingding-github-ssh-fix",
+      "completedAt": 1745100180,
+      "vercel": "https://fate-match.vercel.app",
+      "gitCommit": "5f20971",
+      "gitHubPushFailed": true,
+      "note": "Vercel reinspect 已通過，專案結案。SSH key 問題僅影響 GitHub push"
+    },
+    {
+      "label": "ptt-alertor-progress-check",
+      "completedAt": 1745100300,
+      "vercel": "https://ptt-alertor-olive.vercel.app",
+      "gitCommit": "631b2ec0",
+      "notionUpdated": true,
+      "dvaNotified": true,
+      "note": "NextAuth 修復 + UI v3 部署，Notion 狀態已改為「🔄 進度追蹤中」"
     }
   ],
-  "lastRun": "2026-04-19T22:42:00+08:00"
+  "lastRun": "2026-04-20T02:12:00+08:00"
 }

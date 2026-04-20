@@ -65,12 +65,13 @@ async function fetchPartnerImage(
   traits: string[],
   gender: string,
   birthDate: string,
-  luckyColors: string[]
+  luckyColors: string[],
+  region: string
 ): Promise<PartnerImageResult> {
   const res = await fetch('/api/generate-partner-image', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ traits, gender, birthDate, luckyColors }),
+    body: JSON.stringify({ traits, gender, birthDate, luckyColors, region }),
   })
   if (!res.ok) throw new Error('圖片生成失敗')
   return res.json()
@@ -400,12 +401,13 @@ function InputForm({
   onSubmit,
   loading,
 }: {
-  onSubmit: (name: string, birthDate: string, gender: string) => void
+  onSubmit: (name: string, birthDate: string, gender: string, region: string) => void
   loading: boolean
 }) {
   const [name, setName] = useState('')
   const [birthDate, setBirthDate] = useState('')
   const [gender, setGender] = useState('male')
+  const [region, setRegion] = useState('台灣')
   const [error, setError] = useState('')
 
   const today = new Date().toISOString().split('T')[0]
@@ -420,7 +422,7 @@ function InputForm({
 
   function handleSubmit() {
     if (!validate()) return
-    onSubmit(name.trim(), birthDate, gender)
+    onSubmit(name.trim(), birthDate, gender, region)
   }
 
   return (
@@ -488,6 +490,26 @@ function InputForm({
           />
         </div>
 
+        {/* Region */}
+        <div>
+          <label className="block text-white/60 text-sm mb-2">居住地區</label>
+          <p className="text-white/30 text-xs mb-2">為您生成符合當地風格的理想伴侶</p>
+          <select
+            value={region}
+            onChange={e => setRegion(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#ffd700]/50 transition-colors"
+          >
+            <option value="台灣">🌏 台灣</option>
+            <option value="香港">🌃 香港</option>
+            <option value="中國大陸">🏙️ 中國大陸</option>
+            <option value="馬來西亞">🌴 馬來西亞</option>
+            <option value="新加坡">🏙️ 新加坡</option>
+            <option value="日本">🗾 日本</option>
+            <option value="韓國">🇰🇷 韓國</option>
+            <option value="其他">🌐 其他</option>
+          </select>
+        </div>
+
         {error && (
           <p className="text-red-400 text-sm text-center py-2 bg-red-400/10 rounded-xl">{error}</p>
         )}
@@ -529,7 +551,7 @@ export default function HomePage() {
   const [result, setResult] = useState<FortuneResult | null>(null)
   const [partnerImage, setPartnerImage] = useState<PartnerImageResult | null>(null)
 
-  async function handleSubmit(name: string, birthDate: string, gender: string) {
+  async function handleSubmit(name: string, birthDate: string, gender: string, region: string) {
     setPhase('loading-fortune')
     setResult(null)
     setPartnerImage(null)
@@ -544,7 +566,8 @@ export default function HomePage() {
           fortuneResult.partnerTraits,
           fortuneResult.userGender === 'male' ? 'female' : 'male',
           fortuneResult.partnerBirthDate,
-          fortuneResult.luckyColors
+          fortuneResult.luckyColors,
+          region
         )
         setPartnerImage(imageResult)
       } catch {

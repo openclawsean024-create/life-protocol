@@ -12,7 +12,7 @@ function getZodiacAnimal(birthDate: string): string {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { traits, gender, birthDate, luckyColors } = body
+    const { traits, gender, birthDate, luckyColors, region } = body
 
     if (!traits || !gender || !birthDate) {
       return NextResponse.json({ error: '缺少必要參數' }, { status: 400 })
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     const seed = `${zodiac}${birthDate.replace(/-/g, '')}${gender}`
 
     // Build the prompt based on traits
-    const prompt = buildPrompt(traits, gender, zodiac, luckyColors)
+    const prompt = buildPrompt(traits, gender, zodiac, luckyColors, region, seed)
 
     // Check if Stability AI key is available
     const stabilityKey = process.env.STABILITY_API_KEY
@@ -83,7 +83,18 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function buildPrompt(traits: string[], gender: string, zodiac: string, luckyColors?: string[]): string {
+const REGION_PROMPTS: Record<string, string> = {
+  台灣: '台灣年輕人穿著，台北街頭背景，自然髮色，淡妝，日常穿著',
+  香港: '香港街頭背景，時尚都會風格，粵語氣質',
+  中國大陸: '一線城市年輕人穿著，上海或北京場景背景',
+  馬來西亞: '多元種族融合風格，吉隆坡背景，熱帶氣息',
+  新加坡: '新加坡都市風格，種族融合特徵，商務休閒',
+  日本: '日本街頭風格，東京或大阪背景，時尚潮流，自然妝容',
+  韓國: '韓系街頭風格，首爾背景，K-beauty 妝容，時尚穿著',
+  其他: '亞洲都市背景',
+}
+
+function buildPrompt(traits: string[], gender: string, zodiac: string, luckyColors?: string[], region?: string, seed?: string): string {
   const genderWord = gender === 'female' ? '女性' : '男性'
   const traitWords = traits.slice(0, 5).join('、')
 
@@ -91,10 +102,21 @@ function buildPrompt(traits: string[], gender: string, zodiac: string, luckyColo
     ? ['長髮飄逸', '柔順長髮', '氣質長髮']
     : ['短髮精神', '整齊短髮', '帥氣短髮']
 
-  const hair = hairOptions[Math.floor(Math.random() * hairOptions.length)]
+  const hair = hairOptions[Math.floor(Math.abs(hashString(seed || '')) % hairOptions.length)]
   const color = luckyColors?.[0] || '金色'
+  const regionEnhancement = region ? REGION_PROMPTS[region] || REGION_PROMPTS['其他'] : ''
 
-  return `${genderWord}人物肖像，寫實風格，柔和光線，${traitWords}眼神，${hair}，優雅穿著，氣質出眾，表情溫柔，精緻細節，高解析度，8k品質`
+  return `${genderWord}人物肖像，寫實風格，柔和光線，${traitWords}眼神，${hair}，${regionEnhancement}，氣質出眾，表情溫柔，精緻細節，高解析度，8k品質`
+}
+
+function hashString(str: string): number {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i)
+    hash = (hash << 5) - hash + char
+    hash = hash & hash
+  }
+  return hash
 }
 
 async function generateWithStabilityAI(apiKey: string, prompt: string, gender: string): Promise<string> {
