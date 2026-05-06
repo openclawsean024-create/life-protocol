@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "關於 | Life Protocol",
+  description: "了解 Life Protocol — 一套 AI 驅動的人生策略系統。",
+};
+
 export default function AboutPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-20">
