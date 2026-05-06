@@ -1,9 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    root: "/home/sean/.openclaw/workspace/workspaces/alan/life-protocol",
-  },
+  /* config options here */
 };
 
 export default nextConfig;
