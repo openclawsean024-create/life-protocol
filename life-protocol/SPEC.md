@@ -9,10 +9,10 @@ Life Protocol 實踐應用 - AI 驅動的人生策略系統
 - Phase 1: ✅ 核心頁面完成
   - ✅ App Shell（Header + Footer + ThemeProvider）
   - ✅ 首頁（Hero + Features + CTA）
-  - ✅ 關於頁面（系統介紹 + 開發階段）
   - ✅ Protocol 頁面（3步引導 + localStorage 持久化）
   - ✅ 隱私權政策 / 服務條款
   - ✅ 響應式設計
+- Phase 2: 待啟動（用戶輸入 + AI 分析引擎）
 
 ## Phase 1: 核心頁面與佈局
 

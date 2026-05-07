@@ -61,7 +61,6 @@ export default function ProtocolPage() {
   const [showSaved, setShowSaved] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load from localStorage on mount
   useEffect(() => {
     const saved = loadProtocol();
     if (Object.keys(saved).length > 0) {
@@ -107,21 +106,18 @@ export default function ProtocolPage() {
         </p>
       </div>
 
-      {/* Saved indicator */}
       {showSaved && (
         <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
           ✦ 已儲存至瀏覽器
         </div>
       )}
 
-      {/* Last saved */}
       {savedAt && !showSaved && (
         <div className="mt-6 text-center text-xs text-zinc-400 dark:text-zinc-600">
           上次儲存：{savedAt}
         </div>
       )}
 
-      {/* Step indicators */}
       <div className="mt-10 flex items-center justify-center gap-2">
         {steps.map((s) => (
           <button
@@ -138,7 +134,6 @@ export default function ProtocolPage() {
         ))}
       </div>
 
-      {/* Step content */}
       <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-900">
         {steps.map((step) =>
           activeStep === step.id ? (
@@ -187,7 +182,6 @@ export default function ProtocolPage() {
         )}
       </div>
 
-      {/* Summary */}
       {isLoaded && Object.keys(inputs).length > 0 && (
         <div className="mt-6 rounded-xl border border-zinc-200 bg-zinc-50 p-6 dark:border-zinc-800 dark:bg-zinc-900">
           <div className="flex items-center justify-between">
@@ -218,7 +212,6 @@ export default function ProtocolPage() {
         </div>
       )}
 
-      {/* Empty state hint */}
       {isLoaded && Object.keys(inputs).length === 0 && (
         <div className="mt-6 text-center text-sm text-zinc-400 dark:text-zinc-600">
           開始填寫，系統會自動儲存至瀏覽器
