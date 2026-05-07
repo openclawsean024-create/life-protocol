@@ -12,12 +12,14 @@ interface FortuneResult {
   userName: string
   userBirthDate: string
   userGender: string
+  userRegion: string
   userBazi: { year: string; month: string; day: string; hour: string }
   userElement: string
   userWuxing: Record<string, number>
   userTraits: string[]
   luckyColors: string[]
   loveStyle: string
+  suitableInteractionMode: string
   partnerZodiac: string
   partnerBirthDate: string
   partnerBazi: { year: string; month: string; day: string; hour: string }
@@ -51,11 +53,11 @@ const ELEMENT_COLOR: Record<string, string> = {
 
 // ─── Fortune API ─────────────────────────────────────────────────────────────
 
-async function fetchFortune(name: string, birthDate: string, gender: string): Promise<FortuneResult> {
+async function fetchFortune(name: string, birthDate: string, gender: string, region: string, shichen: number): Promise<FortuneResult> {
   const res = await fetch('/api/fortune', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, birthDate, gender }),
+    body: JSON.stringify({ name, birthDate, gender, region, shichen }),
   })
   if (!res.ok) throw new Error('命理分析失敗')
   return res.json()
@@ -179,7 +181,7 @@ function Report({
   }))
 
   const handleShare = () => {
-    const text = `命定天子/命定天女 | ${result.userName} 的命理報告\n\n` +
+    const text = `命定天子/命定天女 | ${result.userName} 的命理報告（${result.userRegion}）\n\n` +
       `緣分分數：${result.score}分\n` +
       `${result.wuxingConclusion}\n\n` +
       `你的五行：${result.userElement} | 命定對象五行：${result.partnerElement}\n\n` +
@@ -219,6 +221,12 @@ function Report({
 
         <p className="text-[#ffd700] text-sm mb-1" style={{ fontFamily: 'var(--font-serif)' }}>命定伴侶形象</p>
         <p className="text-white font-bold text-lg mb-4">{partnerName}</p>
+
+        {/* Region badge */}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs text-white/70 mb-4">
+          <span>📍</span>
+          <span>{result.userRegion}</span>
+        </div>
 
         {/* Score */}
         <div className="text-7xl font-black mb-1" style={{ color: scoreColor }}>
@@ -366,6 +374,11 @@ function Report({
         <p className="text-[#eaeaea] text-sm leading-relaxed">{result.loveStyle}</p>
       </ReportSection>
 
+      {/* 適合的相處模式 */}
+      <ReportSection title="適合的相處模式" icon={Star} delay={450}>
+        <p className="text-[#eaeaea] text-sm leading-relaxed">{result.suitableInteractionMode}</p>
+      </ReportSection>
+
       {/* 幸運色 & 定情物 */}
       <ReportSection title="幸運色 & 建議定情物" icon={Palette} delay={500}>
         <div className="flex gap-2 mb-3">
@@ -401,16 +414,32 @@ function InputForm({
   onSubmit,
   loading,
 }: {
-  onSubmit: (name: string, birthDate: string, gender: string, region: string) => void
+  onSubmit: (name: string, birthDate: string, gender: string, region: string, shichen: number) => void
   loading: boolean
 }) {
   const [name, setName] = useState('')
   const [birthDate, setBirthDate] = useState('')
   const [gender, setGender] = useState('male')
   const [region, setRegion] = useState('台灣')
+  const [shichen, setShichen] = useState<number>(0) // 0=子, 1=丑, ..., 11=亥
   const [error, setError] = useState('')
 
   const today = new Date().toISOString().split('T')[0]
+
+  const SHICHEN_LABELS = [
+    { value: 0, label: '子', time: '23:00-00:59' },
+    { value: 1, label: '丑', time: '01:00-02:59' },
+    { value: 2, label: '寅', time: '03:00-04:59' },
+    { value: 3, label: '卯', time: '05:00-06:59' },
+    { value: 4, label: '辰', time: '07:00-08:59' },
+    { value: 5, label: '巳', time: '09:00-10:59' },
+    { value: 6, label: '午', time: '11:00-12:59' },
+    { value: 7, label: '未', time: '13:00-14:59' },
+    { value: 8, label: '申', time: '15:00-16:59' },
+    { value: 9, label: '酉', time: '17:00-18:59' },
+    { value: 10, label: '戌', time: '19:00-20:59' },
+    { value: 11, label: '亥', time: '21:00-22:59' },
+  ]
 
   function validate() {
     if (!name.trim()) { setError('請輸入姓名'); return false }
@@ -422,7 +451,7 @@ function InputForm({
 
   function handleSubmit() {
     if (!validate()) return
-    onSubmit(name.trim(), birthDate, gender, region)
+    onSubmit(name.trim(), birthDate, gender, region, shichen)
   }
 
   return (
@@ -490,6 +519,29 @@ function InputForm({
           />
         </div>
 
+        {/* Shichen selector */}
+        <div>
+          <label className="block text-white/60 text-sm mb-2">出生時辰</label>
+          <p className="text-white/30 text-xs mb-2">影響時柱，直接關係八字準確度</p>
+          <div className="grid grid-cols-4 gap-2">
+            {SHICHEN_LABELS.map(({ value, label, time }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setShichen(value)}
+                className={`p-2 rounded-xl text-center transition-all border text-xs ${
+                  shichen === value
+                    ? 'border-[#ffd700] bg-[#ffd700]/10 text-[#ffd700]'
+                    : 'border-white/10 bg-white/5 text-white/50 hover:border-white/20'
+                }`}
+              >
+                <div className="font-bold text-base">{label}</div>
+                <div className="opacity-60 text-[10px] leading-tight mt-0.5">{time}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Region */}
         <div>
           <label className="block text-white/60 text-sm mb-2">居住地區</label>
@@ -551,20 +603,20 @@ export default function HomePage() {
   const [result, setResult] = useState<FortuneResult | null>(null)
   const [partnerImage, setPartnerImage] = useState<PartnerImageResult | null>(null)
 
-  async function handleSubmit(name: string, birthDate: string, gender: string, region: string) {
+  async function handleSubmit(name: string, birthDate: string, gender: string, region: string, shichen: number) {
     setPhase('loading-fortune')
     setResult(null)
     setPartnerImage(null)
 
     try {
-      const fortuneResult = await fetchFortune(name, birthDate, gender)
+      const fortuneResult = await fetchFortune(name, birthDate, gender, region, shichen)
       setResult(fortuneResult)
       setPhase('loading-image')
 
       try {
         const imageResult = await fetchPartnerImage(
           fortuneResult.partnerTraits,
-          fortuneResult.userGender === 'male' ? 'female' : 'male',
+          fortuneResult.userGender,
           fortuneResult.partnerBirthDate,
           fortuneResult.luckyColors,
           region

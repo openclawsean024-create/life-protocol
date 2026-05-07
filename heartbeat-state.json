@@ -1,8 +1,8 @@
 {
   "lastChecks": {
-    "pending_tasks": 1745100120,
-    "subagents": 1745100120,
-    "notion": 1745100120,
+    "pending_tasks": 1777216200,
+    "subagents": 1777216200,
+    "notion": 1777216200,
     "dva_report": null
   },
   "activeTasks": [
@@ -48,5 +48,5 @@
       "note": "NextAuth 修復 + UI v3 部署，Notion 狀態已改為「🔄 進度追蹤中」"
     }
   ],
-  "lastRun": "2026-04-20T02:12:00+08:00"
+  "lastRun": "2026-04-26T23:10:00+08:00"
 }

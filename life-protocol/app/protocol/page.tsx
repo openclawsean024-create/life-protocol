@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const STORAGE_KEY = "life_protocol_v1";
 
 const steps = [
   {
@@ -23,9 +25,76 @@ const steps = [
   },
 ];
 
+interface StoredProtocol {
+  inputs: Record<number, string>;
+  savedAt: string;
+}
+
+function loadProtocol(): Record<number, string> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return {};
+    const data: StoredProtocol = JSON.parse(raw);
+    return data.inputs || {};
+  } catch {
+    return {};
+  }
+}
+
+function saveProtocol(inputs: Record<number, string>): void {
+  try {
+    const data: StoredProtocol = {
+      inputs,
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    // ignore
+  }
+}
+
 export default function ProtocolPage() {
   const [activeStep, setActiveStep] = useState(1);
   const [inputs, setInputs] = useState<Record<number, string>>({});
+  const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [showSaved, setShowSaved] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const saved = loadProtocol();
+    if (Object.keys(saved).length > 0) {
+      setInputs(saved);
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const data: StoredProtocol = JSON.parse(raw);
+          if (data.savedAt) {
+            setSavedAt(new Date(data.savedAt).toLocaleString("zh-TW"));
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+    setIsLoaded(true);
+  }, []);
+
+  const handleSave = () => {
+    saveProtocol(inputs);
+    setSavedAt(new Date().toLocaleString("zh-TW"));
+    setShowSaved(true);
+    setTimeout(() => setShowSaved(false), 3000);
+  };
+
+  const handleReset = () => {
+    if (confirm("確定要清除所有已儲存的內容嗎？")) {
+      localStorage.removeItem(STORAGE_KEY);
+      setInputs({});
+      setSavedAt(null);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-20">
@@ -37,6 +106,20 @@ export default function ProtocolPage() {
           三步式系統，幫助你梳理人生策略的核心框架
         </p>
       </div>
+
+      {/* Saved indicator */}
+      {showSaved && (
+        <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+          ✦ 已儲存至瀏覽器
+        </div>
+      )}
+
+      {/* Last saved */}
+      {savedAt && !showSaved && (
+        <div className="mt-6 text-center text-xs text-zinc-400 dark:text-zinc-600">
+          上次儲存：{savedAt}
+        </div>
+      )}
 
       {/* Step indicators */}
       <div className="mt-10 flex items-center justify-center gap-2">
@@ -75,7 +158,7 @@ export default function ProtocolPage() {
                 rows={4}
                 className="w-full resize-none rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-600 dark:focus:border-zinc-600 dark:focus:ring-zinc-800"
               />
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between">
                 <button
                   onClick={() => setActiveStep((s) => Math.max(1, s - 1))}
                   disabled={activeStep === 1}
@@ -92,7 +175,7 @@ export default function ProtocolPage() {
                   </button>
                 ) : (
                   <button
-                    onClick={() => alert("生命Protocol儲存成功！")}
+                    onClick={handleSave}
                     className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500"
                   >
                     儲存 Protocol
@@ -105,11 +188,19 @@ export default function ProtocolPage() {
       </div>
 
       {/* Summary */}
-      {Object.keys(inputs).length > 0 && (
+      {isLoaded && Object.keys(inputs).length > 0 && (
         <div className="mt-6 rounded-xl border border-zinc-200 bg-zinc-50 p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-            已輸入內容
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+              已輸入內容
+            </h3>
+            <button
+              onClick={handleReset}
+              className="text-xs text-zinc-400 hover:text-red-500 transition-colors"
+            >
+              清除全部
+            </button>
+          </div>
           <div className="mt-3 space-y-3">
             {steps.map((step) =>
               inputs[step.id] ? (
@@ -117,13 +208,20 @@ export default function ProtocolPage() {
                   <span className="text-xs font-medium text-zinc-500 dark:text-zinc-500">
                     Step {step.id} — {step.title}
                   </span>
-                  <p className="mt-0.5 text-sm text-zinc-800 dark:text-zinc-200">
+                  <p className="mt-0.5 text-sm text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap">
                     {inputs[step.id]}
                   </p>
                 </div>
               ) : null
             )}
           </div>
+        </div>
+      )}
+
+      {/* Empty state hint */}
+      {isLoaded && Object.keys(inputs).length === 0 && (
+        <div className="mt-6 text-center text-sm text-zinc-400 dark:text-zinc-600">
+          開始填寫，系統會自動儲存至瀏覽器
         </div>
       )}
     </div>

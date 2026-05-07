@@ -13,18 +13,19 @@ import {
   getLuckyColors,
   getLoveStyle,
   getCompatibleItems,
+  getSuitableInteractionMode,
 } from '@/lib/bazi'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, birthDate, gender } = body
+    const { name, birthDate, gender, region, shichen } = body
 
     if (!name || !birthDate) {
       return NextResponse.json({ error: '姓名與生日為必填欄位' }, { status: 400 })
     }
 
-    const bazi = calcBazi(birthDate)
+    const bazi = calcBazi(birthDate, shichen !== undefined ? Number(shichen) : undefined)
     const mainElement = getMainElement(bazi)
 
     // User analysis
@@ -38,8 +39,12 @@ export async function POST(request: NextRequest) {
     const partnerElement = getComplementaryElement(mainElement)
     const partnerTraits = getPersonalityTraits(partnerElement)
 
-    // Generate a simulated partner birth date (based on user's bazi)
-    const simulatedPartnerBirthDate = generateSimulatedPartnerBirthDate(birthDate, mainElement)
+    // Derive partner gender (opposite of user's own gender)
+    const userOwnGender = gender === 'male' ? 'female' : 'male'
+    const partnerGender = gender === 'female' ? 'female' : 'male'
+
+    // Generate a simulated partner birth date (based on user's bazi and partner gender)
+    const simulatedPartnerBirthDate = generateSimulatedPartnerBirthDate(birthDate, mainElement, partnerGender)
     const partnerBazi = calcBazi(simulatedPartnerBirthDate)
     const partnerWuxing = calcWuxingBalance(partnerBazi.day)
     const partnerZodiac = getZodiacAnimal(simulatedPartnerBirthDate)
@@ -67,6 +72,7 @@ export async function POST(request: NextRequest) {
       userName: name,
       userBirthDate: birthDate,
       userGender: gender || 'male',
+      userRegion: region || '其他',
       userBazi: bazi,
       userElement: mainElement,
       userWuxing,
@@ -88,6 +94,8 @@ export async function POST(request: NextRequest) {
       radarData,
       // Suggested love items
       compatibleItems: getCompatibleItems(mainElement),
+      // Interaction mode
+      suitableInteractionMode: getSuitableInteractionMode(mainElement, partnerElement2),
     }
 
     return NextResponse.json(result)
@@ -108,11 +116,13 @@ function getComplementaryElement(element: string): string {
   return cycle[element] || '土'
 }
 
-function generateSimulatedPartnerBirthDate(userBirthDate: string, userElement: string): string {
+function generateSimulatedPartnerBirthDate(userBirthDate: string, userElement: string, partnerGender?: string): string {
   // Generate a plausible partner birth date based on user's bazi
   const userYear = new Date(userBirthDate).getFullYear()
   // Generate a birth year within ±5 years of user's year for plausible pairing
-  const seed = (userYear * 7 + userElement.charCodeAt(0)) % 11
+  // Incorporate partnerGender into seed so different genders yield different partner years
+  const genderOffset = partnerGender === 'female' ? 3 : partnerGender === 'male' ? 8 : 0
+  const seed = (userYear * 7 + userElement.charCodeAt(0) + genderOffset) % 11
   const yearOffset = seed - 5
   const partnerYear = userYear + yearOffset
 

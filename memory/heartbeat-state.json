@@ -1,10 +1,10 @@
 {
   "lastChecks": {
-    "2026-04-21T04:19": {
-      "subagents": "PTT Alertor PostgreSQL fix (3e4518ee) completed",
-      "pending_tasks": "none new",
-      "notion": "PTT Alertor - DVA updated to 待驗收",
-      "dva_report": "PTT Alertor done - DVA responded, Notion updated, Sophia reinspect queued"
-    }
-  }
+    "email": 1748926200,
+    "calendar": 1748926200,
+    "weather": 1748926200
+  },
+  "lastHeartbeat": "2026-05-06T22:10:00Z",
+  "pendingTasksReviewed": true,
+  "subagentsActive": 0
 }

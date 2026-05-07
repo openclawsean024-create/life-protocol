@@ -53,7 +53,7 @@ export interface WuxingScores {
   水: number
 }
 
-export function calcBazi(birthDate: string): BaziResult {
+export function calcBazi(birthDate: string, hourBranch?: number): BaziResult {
   const d = new Date(birthDate)
   const year = d.getFullYear()
   const month = d.getMonth() + 1
@@ -66,8 +66,9 @@ export function calcBazi(birthDate: string): BaziResult {
   const mStemIdx = ((yStem % 5) * 2 + month) % 10
 
   const { stemIndex: dStemIdx, branchIndex: dBranchIdx } = getStemFromDay(birthDate)
-  const hBranchIdx = Math.floor(hour / 2) % 12
-  const hStemIdx = (dStemIdx * 2 + Math.floor(hour / 2)) % 10
+  // Use user-selected hour branch if provided, otherwise calculate from system hour
+  const hBranchIdx = hourBranch !== undefined ? hourBranch : Math.floor(hour / 2) % 12
+  const hStemIdx = (dStemIdx * 2 + hBranchIdx) % 10
 
   return {
     year: HEAVENLY_STEMS[yStem] + EARTHLY_BRANCHES[yBranch],
@@ -273,4 +274,26 @@ export function getCompatibleItems(element: string): string[] {
     水: ['黑曜石', '藍寶石', '珍珠項鍊'],
   }
   return items[element] || items['土']
+}
+
+export function getSuitableInteractionMode(myElement: string, partnerElement: string): string {
+  const modes: Record<string, string> = {
+    '木木': '互補成長型：兩人皆具創意與理想主義，適合攜手追求共同目標。相處時多給予對方發揮空間，避免过度干预。',
+    '木火': '激情激勵型：木型人的韌性與火型人的熱情互補，適合一起探索新事物。注意傾聽彼此需求，避免一方過度燃燒。',
+    '木土': '穩健支持型：木型創意需要土型務實來落實，是理想的事業夥伴。相處時多肯定對方價值，建立信任基礎。',
+    '木金': '理性互補型：木型感性與金型理性形成平衡，適合深度對話與決策。學習欣赏对方的思维方式，不要试图改变对方。',
+    '木水': '靈感流通型：木型規劃與水型彈性相輔相成，適合創意專案。保持溝通順暢，避免過度理想化。',
+    '火火': '熱情共鳴型：雙方都充滿活力，適合一起冒險與體驗生活。注意給彼此冷靜空間，避免情緒升溫過快。',
+    '火土': '溫暖落地型：火型熱情帶動土型保守，土型穩定容納火型波動。相處時多表達感謝，讓對方感受被重視。',
+    '火金': '張力成長型：火金相剋但也相激，適合在競争中成長。學會欣賞差異，將衝突化為建設性討論。',
+    '火水': '陰陽調和型：火水天然對立，需更多包容與理解。適合從事藝術或需要創意的工作，互相激發靈感。',
+    '土土': '溫馨安穩型：兩人皆重視安全感，適合建立溫暖的家庭環境。偶爾打破常規，為生活添加驚喜。',
+    '土金': '務實夥伴型：土金皆重視承諾與責任，是可靠的商業或感情夥伴。學習直接表達情感，不要只埋頭付出。',
+    '土水': '剛柔並濟型：土型穩重與水型靈活互補，適合一起面對生活挑戰。多倾听少判断，给对方安全感。',
+    '金金': '原則共識型：雙方皆重視規則與承諾，適合合作無間。注意别過度堅持立場，學會適時讓步。',
+    '金水': '智慧組合型：金理性與水靈活結合，適合分析與策劃工作。相處時多分享感受，避免過於功利。',
+    '水水': '浪漫默契型：雙方皆敏感浪漫，適合營造深度的情感連結。注意腳踏實地，避免過度逃避現實。',
+  }
+  const key = myElement + partnerElement
+  return modes[key] || '尊重差異型：五行各有特質，關鍵在於相互尊重與理解。多欣賞對方的優點，磨合中成長。'
 }
